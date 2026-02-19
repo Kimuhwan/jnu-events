@@ -1,0 +1,19 @@
+name = "jnu-events-worker"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# ✅ 배포 후, 이 Worker를 예: https://api.example.com 으로 라우팅하거나 Pages와 same-origin으로 연결하세요.
+# routes = [{ pattern = "your-domain.com/api/*", zone_name = "your-domain.com" }]
+
+[triggers]
+crons = ["0 18 * * *"] # 매일 03:00 KST (UTC+9 -> 18:00 UTC)
+
+[[d1_databases]]
+binding = "DB"
+database_name = "jnu_events"
+database_id = "70b0402c-d845-4bb6-98e0-2575b0a31d89"
+
+[vars]
+CRAWL_TIMEOUT_MS = "12000"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+
