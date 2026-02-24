@@ -1,0 +1,5 @@
+# Cloudflare Workers 로컬 개발용 환경 변수
+# 이 파일은 .gitignore에 포함되어 있으므로 git에 커밋되지 않습니다.
+# 배포 환경에서는 `npx wrangler secret put ADMIN_TOKEN` 명령으로 시크릿을 등록하세요.
+
+ADMIN_TOKEN=여기에_안전한_시크릿_토큰을_입력하세요

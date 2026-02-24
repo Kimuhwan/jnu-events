@@ -16,4 +16,5 @@ export type Env = {
   DB: D1Database;
   CRAWL_TIMEOUT_MS: string;
   USER_AGENT: string;
+  ADMIN_TOKEN?: string; // ✅ 추가
 };

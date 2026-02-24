@@ -12,8 +12,8 @@
     "nanoid": "^5.1.5"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250129.0",
-    "typescript": "^5.7.3",
-    "wrangler": "^4.66.0"
+    "@cloudflare/workers-types": "^4.20260303.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.68.0"
   }
 }

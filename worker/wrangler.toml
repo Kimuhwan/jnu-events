@@ -2,11 +2,11 @@ name = "jnu-events-worker"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 
-# ✅ 배포 후, 이 Worker를 예: https://api.example.com 으로 라우팅하거나 Pages와 same-origin으로 연결하세요.
+# 배포 후, 이 Worker를 예: https://api.example.com 으로 라우팅하거나 Pages와 same-origin으로 연결하세요.
 # routes = [{ pattern = "your-domain.com/api/*", zone_name = "your-domain.com" }]
 
 [triggers]
-crons = ["0 18 * * *"] # 매일 03:00 KST (UTC+9 -> 18:00 UTC)
+crons = ["0 18 * * *"] # 매일 03:00 KST (UTC+9 → 18:00 UTC)
 
 [[d1_databases]]
 binding = "DB"
@@ -15,5 +15,8 @@ database_id = "70b0402c-d845-4bb6-98e0-2575b0a31d89"
 
 [vars]
 CRAWL_TIMEOUT_MS = "12000"
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (compatible; JNUEventsBot/1.0; +https://github.com/your-repo)"
 
+# ⚠️  ADMIN_TOKEN은 평문으로 여기에 넣지 말고, 아래 명령어로 시크릿을 등록하세요:
+#     npx wrangler secret put ADMIN_TOKEN
+# 로컬 개발 시에는 worker/.dev.vars 파일에 ADMIN_TOKEN=your_secret 을 설정하세요.

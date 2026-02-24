@@ -2,6 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-:focus-visible { outline: none; }
+/* 포커스 링 초기화 (Tailwind ring으로 대체) */
+:focus-visible {
+  outline: none;
+}
 
-html { scroll-behavior: smooth; }
+/* 부드러운 스크롤 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 선택 영역 브랜드 색상 */
+::selection {
+  background-color: #008231;
+  color: white;
+}
+
+/* 스크롤바 스타일 (크로미움 계열) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+}

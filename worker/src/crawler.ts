@@ -3,11 +3,14 @@ import { SOURCES } from "./sources";
 import { isoNow } from "./utils";
 import { upsertPost, logLine, logRun } from "./db";
 
+// 한 소스에서 크롤링할 최대 상세 글 수
+const DETAIL_LIMIT = 20;
+
 export async function runCrawl(env: Env) {
   const runId = crypto.randomUUID();
   const startedAt = isoNow();
 
-  // ✅ 부분 실패가 있어도 전체 크론/런은 성공으로 두고,
+  // 부분 실패가 있어도 전체 크론/런은 성공으로 두고,
   // 실패는 stats + crawl_logs로만 남기는 운영형 방식
   let overallOk = true;
 
@@ -21,8 +24,10 @@ export async function runCrawl(env: Env) {
         const listed = await src.list(env);
         stats[src.id].listed = listed.length;
 
-        // 부하 방지: 상위 N개만 상세 조회 (필요하면 10~15로 조절)
-        const top = listed.slice(0, 12);
+        await logLine(env, runId, src.id, "info", `listed ${listed.length} items`);
+
+        // 부하 방지: 최근 N개만 상세 조회
+        const top = listed.slice(0, DETAIL_LIMIT);
 
         for (const item of top) {
           try {
@@ -30,11 +35,12 @@ export async function runCrawl(env: Env) {
             const r = await upsertPost(env, src.id, detail);
             if (r.changed) stats[src.id].changed += 1;
 
-            await sleep(200);
+            // 소스 서버 부하 방지
+            await sleep(300);
           } catch (e: any) {
             stats[src.id].errors += 1;
             overallOk = false;
-            await logLine(env, runId, src.id, "error", `detail fail: ${e?.message ?? String(e)}`);
+            await logLine(env, runId, src.id, "error", `detail fail [${item.remoteId}]: ${e?.message ?? String(e)}`);
           }
         }
       } catch (e: any) {
@@ -43,7 +49,8 @@ export async function runCrawl(env: Env) {
         await logLine(env, runId, src.id, "error", `list fail: ${e?.message ?? String(e)}`);
       }
 
-      await sleep(600);
+      // 소스 간 간격
+      await sleep(800);
     }
   } finally {
     const finishedAt = isoNow();
