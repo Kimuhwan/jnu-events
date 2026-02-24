@@ -37,8 +37,6 @@ export function PostsPage() {
         setInitialDone(true);
       }
     },
-    // cursor를 deps에서 제거해 무한 루프 방지 — cursor는 인자로 전달
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [filters]
   );
 

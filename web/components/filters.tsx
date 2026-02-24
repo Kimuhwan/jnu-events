@@ -110,7 +110,7 @@ export function Filters({
           <span className="text-xs text-zinc-500 dark:text-zinc-400">적용된 필터:</span>
           {value.q && (
             <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-medium text-brand dark:bg-brand/20">
-              "{value.q}"
+              &ldquo;{value.q}&rdquo;
               <button
                 type="button"
                 onClick={() => onChange({ ...value, q: "" })}
