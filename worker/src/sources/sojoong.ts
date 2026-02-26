@@ -70,7 +70,8 @@ export const sojoongSource: Source = {
       Number(env.CRAWL_TIMEOUT_MS)
     );
 
-    const items: ListedItem[] = [];
+    const pinnedItems: ListedItem[] = [];
+    const normalItems: ListedItem[] = [];
 
     // <tr> 단위로 분리
     const trRe = /<tr([^>]*)>([\s\S]*?)<\/tr>/gi;
@@ -80,8 +81,7 @@ export const sojoongSource: Source = {
       const trAttrs = trMatch[1];
       const trInner = trMatch[2];
 
-      // kboard-list-notice 클래스 = 고정 공지 → 제외
-      if (/kboard-list-notice/i.test(trAttrs)) continue;
+      const isPinned = /kboard-list-notice/i.test(trAttrs);
 
       // uid 포함 href 추출
       const hrefMatch = trInner.match(/href=["']([^"']*uid=(\d+)[^"']*)["']/i);
@@ -104,16 +104,41 @@ export const sojoongSource: Source = {
 
       if (!title || title.length < 2) continue;
 
-      items.push({
+      const listedItem: ListedItem = {
         remoteId: uid,
         title: title.slice(0, 200),
         postedAt,
         url,
-      });
+      };
+
+      if (isPinned) {
+        pinnedItems.push(listedItem);
+      } else {
+        normalItems.push(listedItem);
+      }
     }
 
-    items.sort((a, b) => Number(b.remoteId) - Number(a.remoteId));
-    return items.slice(0, 30);
+    // 고정 공지는 최대 4개까지만 포함
+    const topPinned = pinnedItems.slice(0, 4);
+
+    // 중복 uid 제거 + 날짜 우선 정렬 (없으면 uid 내림차순)
+    const mergedItems = [...topPinned, ...normalItems];
+    const dedupedItems = mergedItems.filter((item, index, arr) => (
+      arr.findIndex((candidate) => candidate.remoteId === item.remoteId) === index
+    ));
+
+    dedupedItems.sort((a, b) => {
+      const aTs = a.postedAt ? Date.parse(a.postedAt) : Number.NaN;
+      const bTs = b.postedAt ? Date.parse(b.postedAt) : Number.NaN;
+
+      if (Number.isFinite(aTs) && Number.isFinite(bTs) && aTs !== bTs) return bTs - aTs;
+      if (Number.isFinite(aTs) && !Number.isFinite(bTs)) return -1;
+      if (!Number.isFinite(aTs) && Number.isFinite(bTs)) return 1;
+
+      return Number(b.remoteId) - Number(a.remoteId);
+    });
+
+    return dedupedItems.slice(0, 30);
   },
 
   async detail(env: Env, item: ListedItem) {
