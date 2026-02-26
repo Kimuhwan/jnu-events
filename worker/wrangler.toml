@@ -11,7 +11,7 @@ crons = ["0 18 * * *"] # 매일 03:00 KST (UTC+9 → 18:00 UTC)
 [[d1_databases]]
 binding = "DB"
 database_name = "jnu_events"
-database_id = "70b0402c-d845-4bb6-98e0-2575b0a31d89"
+database_id = "0e6a6969-19be-44a7-b510-e8952a49f6b4"
 
 [vars]
 CRAWL_TIMEOUT_MS = "12000"

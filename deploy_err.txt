@@ -1,0 +1,40 @@
+﻿
+ ?낉툘 wrangler 4.66.0 (update available 4.68.1)
+?????????????????????????????????????????????
+node.exe : [33m??[43;33m[[4
+3;30mWARNING[43;33m][0m [1m
+Warning: Your working director
+y is a git repo and has uncomm
+itted changes[0m
+위치 줄:1 문자:1
++ & "C:\Program Files\nodejs/n
+ode.exe" "C:\Program Files\nod
+ejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo          : 
+    NotSpecified: ([33m??[  
+  43;33m...ted changes[0m:   
+ String) [], RemoteExcepti    
+on
+    + FullyQualifiedErrorId : 
+    NativeCommandError
+ 
+
+  To silence this warning, pas
+s in --commit-dirty=true
+
+
+
+[31mX [41;31m[[41;97mERROR
+[41;31m][0m [1mENOENT: no su
+ch file or directory, scandir 
+'C:\jnu-events-mvp\web\.vercel
+\output\static'[0m
+
+
+?さ  Logs were written to "C:\U
+sers\HwanE\AppData\Roaming\xdg
+.config\.wrangler\logs\wrangle
+r-2026-02-26_07-17-31_412.log"

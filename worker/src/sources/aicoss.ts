@@ -9,7 +9,6 @@ export const aicossSource: Source = {
   id: "aicoss",
   label: "전남대학교 인공지능혁신융합사업단",
 
-  // A) 목록에서 너무 오래된 글(서버 500 잘 나는 구간)을 아예 제외
   async list(env: Env) {
     const html = await fetchTextWithRetry(
       LIST_URL,
@@ -25,29 +24,44 @@ export const aicossSource: Source = {
       2
     );
 
-    const text = stripHtml(html);
-    const lines = text.split("\n").map((s) => s.trim()).filter(Boolean);
-
     const map = new Map<string, { url: string; title: string }>();
 
-    for (const line of lines) {
-      // 라인 시작의 "게시물 번호" 추출
-      const m = line.match(/^(\d{1,6})\b/);
-      if (!m) continue;
-
-      const id = m[1];
+    // 방법 1: href="/www/notice/view/숫자" 형태 링크에서 id + 제목 추출
+    const linkRe = /<a\s[^>]*href=["']([^"']*\/notice\/view\/(\d+)[^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi;
+    let m: RegExpExecArray | null;
+    while ((m = linkRe.exec(html))) {
+      const id = m[2];
       const n = Number(id);
-      if (!Number.isFinite(n)) continue;
+      if (!Number.isFinite(n) || n < 1000) continue;
 
-      // ✅ A) 1000 미만은 상세에서 500이 잘 나는 구간이라 제외 (필요하면 조정)
-      if (n < 1000) continue;
+      const rawText = stripHtml(m[3]).trim();
+      if (!rawText || rawText.length < 3) continue;
 
-      const titleGuess = line.replace(/^(\d{1,6})\s*/, "").slice(0, 200).trim();
+      if (!map.has(id) || map.get(id)!.title.length < rawText.length) {
+        map.set(id, {
+          url: `https://aicoss.ac.kr/www/notice/view/${id}`,
+          title: rawText.slice(0, 200),
+        });
+      }
+    }
 
-      map.set(id, {
-        url: `https://aicoss.ac.kr/www/notice/view/${id}`,
-        title: titleGuess,
-      });
+    // 방법 2 (fallback): 링크가 없을 경우 텍스트 줄 파싱
+    if (map.size === 0) {
+      const text = stripHtml(html);
+      const lines = text.split("\n").map((s) => s.trim()).filter(Boolean);
+      for (const line of lines) {
+        const lm = line.match(/^(\d{1,6})\b/);
+        if (!lm) continue;
+        const id = lm[1];
+        const n = Number(id);
+        if (!Number.isFinite(n) || n < 1000) continue;
+
+        const titleGuess = line.replace(/^(\d{1,6})\s*/, "").slice(0, 200).trim();
+        map.set(id, {
+          url: `https://aicoss.ac.kr/www/notice/view/${id}`,
+          title: titleGuess,
+        });
+      }
     }
 
     const items: ListedItem[] = [...map.entries()].map(([id, v]) => ({
@@ -58,12 +72,9 @@ export const aicossSource: Source = {
     }));
 
     items.sort((a, b) => Number(b.remoteId) - Number(a.remoteId));
-
-    // ✅ 최근 글만 상위 30개
     return items.slice(0, 30);
   },
 
-  // B) 상세에서 500이면 본문 없이 저장(스킵하지 않고 "링크만 남김")
   async detail(env: Env, item: ListedItem) {
     let html: string;
 
@@ -83,21 +94,23 @@ export const aicossSource: Source = {
       );
     } catch (e: any) {
       const msg = String(e?.message ?? e);
-
-      // ✅ B) 서버 자체 오류(500)이면 제목/링크만 남기고 본문은 null로
       if (msg.includes("Fetch failed 500")) {
         return { ...item, content: null, excerpt: null };
       }
-
-      // 다른 에러는 상위에서 로그/카운트 되게 throw
       throw e;
     }
 
-    const titleMatch =
-      html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) ??
-      html.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
-
-    const title = stripHtml(titleMatch?.[1] ?? item.title).slice(0, 300) || item.title;
+    // h2~h4에서 실제 게시물 제목 추출 (h1은 사이트 제목임)
+    let title = item.title;
+    const headingRe = /<h([2-4])[^>]*>([\s\S]*?)<\/h\1>/gi;
+    let hm: RegExpExecArray | null;
+    while ((hm = headingRe.exec(html))) {
+      const text = stripHtml(hm[2]).trim();
+      if (text.length >= 5 && !/^(공지|게시판|notice|board|알림|공지사항)$/i.test(text)) {
+        title = text.slice(0, 300);
+        break;
+      }
+    }
 
     const dateContext =
       html.match(/(작성|등록|게시)\s*일[\s\S]{0,120}/i)?.[0] ?? html;
