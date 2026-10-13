@@ -21,11 +21,6 @@ function cors(res: Response) {
   return new Response(res.body, { status: res.status, headers: h });
 }
 
-function isLocal(req: Request): boolean {
-  const host = req.headers.get("host") || "";
-  return host.includes("127.0.0.1") || host.includes("localhost");
-}
-
 function hasAdminToken(req: Request, env: Env, url: URL): boolean {
   const token = req.headers.get("x-admin-token") || url.searchParams.get("token");
   return !!token && token === (env.ADMIN_TOKEN ?? "");
@@ -67,8 +62,8 @@ export async function handleApi(req: Request, env: Env): Promise<Response> {
   }
 
   // ─── Admin routes ─────────────────────────────────────────────────────
-  // 로컬 개발 OR 유효한 ADMIN_TOKEN 중 하나라도 통과하면 허용
-  const isAdmin = isLocal(req) || hasAdminToken(req, env, url);
+  // Require a configured token even in local development; Host is not authentication.
+  const isAdmin = hasAdminToken(req, env, url);
 
   // POST /api/admin/crawl — 수동 크롤 트리거
   if (url.pathname === "/api/admin/crawl" && req.method === "POST") {
